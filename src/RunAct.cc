@@ -18,8 +18,10 @@
 //////////////////////////////////////////////////
 //   Constructor
 //////////////////////////////////////////////////
-RunAct::RunAct(): G4UserRunAction()
+RunAct::RunAct(double bp): G4UserRunAction()
 {
+	m_BP = bp;
+
 	// Create analysis manager
 	auto AM = G4RootAnalysisManager::Instance();
 
@@ -56,11 +58,16 @@ void RunAct::BeginOfRunAction(const G4Run* /*run*/)
 	// Get analysis manager
 	auto AM = G4RootAnalysisManager::Instance();
 
+	// Beam position
+	char buffer[80];
+	std::ostringstream ss;
+	ss << std::fixed << std::setprecision(1) << m_BP;
+	std::string doubleStr = ss . str();
+
 	// Get current time to include it to file name
 	// This time info is going to be used to generate output file name.
 	time_t rawTime;
 	struct tm* timeInfo;
-	char buffer[80];
 	time(&rawTime);
 	timeInfo = localtime(&rawTime);
 	strftime(buffer, sizeof(buffer), "%Y-%m-%d_%H-%M-%S", timeInfo);
@@ -70,6 +77,8 @@ void RunAct::BeginOfRunAction(const G4Run* /*run*/)
 	// The default file name is set in RunAct::RunAct(),
 	// and it can be overwritten in a macro
 	G4String fileName = "mtd_timing_";
+	fileName += doubleStr;
+	fileName += "_";
 	fileName += sTime;
 	fileName += ".root";
 	G4cout << fileName << G4endl;

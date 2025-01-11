@@ -18,14 +18,14 @@
 //////////////////////////////////////////////////
 //   Constructor and destructor
 //////////////////////////////////////////////////
-PriGenAct::PriGenAct()
+PriGenAct::PriGenAct(double bp)
 {
 	m_PG = new G4ParticleGun();
 
 	// Gun position
-	m_WorldX =  5000. * mm;
-	m_BeamPY =     0. * mm; 
-	m_BeamPZ = - 500. * mm;
+	m_WorldX = 100. * mm;
+	m_BeamPY =   0. * mm; 
+	m_BeamPZ =  bp  * mm;
 
 	// Set particle definition
 	m_PT = G4ParticleTable::GetParticleTable();

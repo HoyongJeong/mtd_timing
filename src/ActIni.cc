@@ -16,8 +16,9 @@
 //////////////////////////////////////////////////
 //   Constructor
 //////////////////////////////////////////////////
-ActIni::ActIni(): G4VUserActionInitialization()
+ActIni::ActIni(double bp): G4VUserActionInitialization()
 {
+	m_BP = bp;
 }
 
 //////////////////////////////////////////////////
@@ -43,8 +44,8 @@ void ActIni::BuildForMaster() const
 void ActIni::Build() const
 {
 	// All user actions are here.
-	SetUserAction(new PriGenAct());
-	SetUserAction(new RunAct());
+	SetUserAction(new PriGenAct(m_BP));
+	SetUserAction(new RunAct(m_BP));
 
 	EveAct* EA = new EveAct();
 	SetUserAction(EA);

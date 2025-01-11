@@ -34,10 +34,11 @@ void PrintHelp();
 int main(int argc, char** argv)
 {
 	// Read options
-	int flag_b = 0, flag_g = 0, flag_h = 0, flag_m = 0;
-	const char* optDic = "bghm:"; // Option dictionary
+	int flag_b = 0, flag_g = 0, flag_h = 0, flag_m = 0, flag_p = 0;
+	const char* optDic = "bghm:p:"; // Option dictionary
 	int option;
 	char* macro;
+	double bp = 0.;
 	while ( (option = getopt(argc, argv, optDic)) != -1 ) // -1 means getopt() parses all options.
 	{
 		switch ( option )
@@ -54,6 +55,10 @@ int main(int argc, char** argv)
 			case 'm' :
 				flag_m = 1;
 				macro = optarg;
+				break;
+			case 'p' :
+				flag_p = 1;
+				bp = atof(optarg);
 				break;
 			case '?' :
 				flag_h = 1;
@@ -96,7 +101,7 @@ int main(int argc, char** argv)
 	RM -> SetUserInitialization(PL);
 
 	// User actions
-	RM -> SetUserInitialization(new ActIni());
+	RM -> SetUserInitialization(new ActIni(bp));
 
 	// Initialize
 	RM -> Initialize();

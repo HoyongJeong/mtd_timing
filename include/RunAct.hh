@@ -17,11 +17,14 @@ class G4Run;
 class RunAct: public G4UserRunAction
 {
   public:
-	RunAct();
+	RunAct(double bp = 0);
 	virtual ~RunAct();
 
 	virtual void BeginOfRunAction(const G4Run*); 
 	virtual void   EndOfRunAction(const G4Run*);
+
+  private:
+	double m_BP;
 };
 
 #endif

@@ -16,13 +16,14 @@
 class ActIni: public G4VUserActionInitialization
 {
   public:
-	ActIni();
+	ActIni(double bp = 0);
 	virtual ~ActIni();
 
 	virtual void BuildForMaster() const;
 	virtual void Build() const;
 
   private:
+	double m_BP;
 };
 
 #endif

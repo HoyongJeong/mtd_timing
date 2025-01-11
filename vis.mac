@@ -9,7 +9,7 @@
 
 /vis/scene/endOfEventAction accumulate 10000
 
-/vis/scene/add/axes -100 100 0 100 mm
+/vis/scene/add/axes -10 10 0 10 mm
 
 /vis/geometry/set/visibility LabLV 0 false
 /vis/viewer/set/style surface

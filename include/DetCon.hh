@@ -36,11 +36,15 @@ class DetCon: public G4VUserDetectorConstruction
 
   private:
 	// Elements
-	G4Element* m_ElH;
-	G4Element* m_ElC;
-	G4Element* m_ElN;
-	G4Element* m_ElO;
-	G4Element* m_ElAr;
+	G4Element* m_ElH;   //  1
+	G4Element* m_ElC;   //  6
+	G4Element* m_ElN;   //  7
+	G4Element* m_ElO;   //  8
+	G4Element* m_ElSi;  // 14
+	G4Element* m_ElAr;  // 18
+	G4Element* m_ElY;   // 39
+	G4Element* m_ElLu;  // 71
+
 
 	// Materials
 	G4Material* m_VacMat;
@@ -54,7 +58,7 @@ class DetCon: public G4VUserDetectorConstruction
 	// Dimensions and detector setup
 	G4double m_LabX, m_LabY, m_LabZ;
 	G4double m_SciX, m_SciY, m_SciZ;
-	G4double m_PMTD, m_PMTT;
+	G4double m_PMTX, m_PMTY, m_PMTZ;
 
 	// Geometry objects: World
 	G4Box* m_WorldSolid;
@@ -71,20 +75,20 @@ class DetCon: public G4VUserDetectorConstruction
 
 	// Geometry objects: Scint
 	G4Box* m_SciSolid0;
-	G4Tubs* m_SciSolid1;
-	G4Tubs* m_SciSolid2;
+	G4Box* m_SciSolid1;
+	G4Box* m_SciSolid2;
 	G4UnionSolid* m_SciSolidm; // Intermediate solid
 	G4UnionSolid* m_SciSolid;
 	G4LogicalVolume* m_SciLV;
 	G4VPhysicalVolume* m_SciPV;
 	
-	// Geometry objects: PMT0
-	G4Tubs* m_PMT0Solid;
+	// Geometry objects: SiPM0
+	G4Box* m_PMT0Solid;
 	G4LogicalVolume* m_PMT0LV;
 	G4VPhysicalVolume* m_PMT0PV;
 
-	// Geometry objects: PMT1
-	G4Tubs* m_PMT1Solid;
+	// Geometry objects: SiPM1
+	G4Box* m_PMT1Solid;
 	G4LogicalVolume* m_PMT1LV;
 	G4VPhysicalVolume* m_PMT1PV;
 

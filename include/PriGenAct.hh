@@ -23,7 +23,7 @@ class G4ParticleGun;
 class PriGenAct: public G4VUserPrimaryGeneratorAction
 {
   public:
-	PriGenAct();
+	PriGenAct(double bp = 0);
 	~PriGenAct();
 
 	virtual void GeneratePrimaries(G4Event* anEvent);

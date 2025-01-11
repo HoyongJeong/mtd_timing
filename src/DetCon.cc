@@ -38,18 +38,19 @@ DetCon::~DetCon()
 void DetCon::DefineDimensions()
 {
 	// World dimensions: Laboratory size
-	m_LabX = 5000. * mm; // World x dimension
-	m_LabY = 5000. * mm; // World y dimension
-	m_LabZ = 5000. * mm; // World z dimension
+	m_LabX = 100. * mm; // World x dimension
+	m_LabY = 100. * mm; // World y dimension
+	m_LabZ = 100. * mm; // World z dimension
 
 	// Scintillator dimensions
-	m_SciX =   50. * mm; // Scintillator x dimension
-	m_SciY =   50. * mm; // Scintillator y dimension
-	m_SciZ = 1500. * mm; // Scintillator z dimension
+	m_SciX =   4. * mm; // Scintillator x dimension
+	m_SciY =   4. * mm; // Scintillator y dimension
+	m_SciZ =  57. * mm; // Scintillator z dimension
 
-	// PMT dimensions
-	m_PMTD =   52. * mm; // PMT diameter
-	m_PMTT =  100. * mm; // PMT length
+	// SiPM dimensions
+	m_PMTX =   4. * mm; // SiPM x dimension
+	m_PMTY =   4. * mm; // SiPM y dimension
+	m_PMTZ =   1. * mm; // SiPM z dimension
 }
 
 //////////////////////////////////////////////////
@@ -72,25 +73,25 @@ G4VPhysicalVolume* DetCon::Construct()
 
 	// Scintillator
 	m_SciSolid0 = new G4Box("SciSolid0", m_SciX / 2., m_SciY / 2., m_SciZ / 2.);
-	m_SciSolid1 = new G4Tubs("SciSolid1", 0., m_PMTD / 2., m_PMTT / 2., 0. * degree, 360. * degree);
-	m_SciSolid2 = new G4Tubs("SciSolid1", 0., m_PMTD / 2., m_PMTT / 2., 0. * degree, 360. * degree);
-	m_SciSolidm = new G4UnionSolid("SciSolidm", m_SciSolid0, m_SciSolid1, 0, G4ThreeVector(0., 0.,   m_SciZ/2. + m_PMTT/2.));
-	m_SciSolid  = new G4UnionSolid("SciSolid" , m_SciSolidm, m_SciSolid2, 0, G4ThreeVector(0., 0., - m_SciZ/2. - m_PMTT/2.));
+	m_SciSolid1 = new G4Box("SciSolid1", m_PMTX / 2., m_PMTY / 2., m_PMTZ / 2.);
+	m_SciSolid2 = new G4Box("SciSolid2", m_PMTX / 2., m_PMTY / 2., m_PMTZ / 2.);
+	m_SciSolidm = new G4UnionSolid("SciSolidm", m_SciSolid0, m_SciSolid1, 0, G4ThreeVector(0., 0.,   m_SciZ/2. + m_PMTZ/2.));
+	m_SciSolid  = new G4UnionSolid("SciSolid" , m_SciSolidm, m_SciSolid2, 0, G4ThreeVector(0., 0., - m_SciZ/2. - m_PMTZ/2.));
 	m_SciLV = new G4LogicalVolume(m_SciSolid, m_SciMat, "SciLV");
 	m_SciLV -> SetVisAttributes(new G4VisAttributes(G4Colour::White()));
 	m_SciPV = new G4PVPlacement(0, G4ThreeVector(0., 0., 0.), m_SciLV, "SciPV", m_LabLV, false, 0);
 
-	// PMT0
-	m_PMT0Solid = new G4Tubs("PMT0Solid", 0., m_PMTD / 2., m_PMTT / 2., 0. * degree, 360. * degree);
+	// SiPM0
+	m_PMT0Solid = new G4Box("PMTSolid0", m_PMTX / 2., m_PMTY / 2., m_PMTZ / 2.);
 	m_PMT0LV = new G4LogicalVolume(m_PMT0Solid, m_PMTMat, "PMT0LV");
 	m_PMT0LV -> SetVisAttributes(new G4VisAttributes(G4Colour::Gray()));
-	m_PMT0PV = new G4PVPlacement(0, G4ThreeVector(0., 0.,   m_SciZ/2. + m_PMTT/2.), m_PMT0LV, "PMT0PV", m_SciLV, false, 0);
+	m_PMT0PV = new G4PVPlacement(0, G4ThreeVector(0., 0.,   m_SciZ/2. + m_PMTZ/2.), m_PMT0LV, "PMT0PV", m_SciLV, false, 0);
 
-	// PMT1
-	m_PMT1Solid = new G4Tubs("PMT1Solid", 0., m_PMTD / 2., m_PMTT / 2., 0. * degree, 360. * degree);
+	// SiPM1
+	m_PMT1Solid = new G4Box("PMTSolid1", m_PMTX / 2., m_PMTY / 2., m_PMTZ / 2.);
 	m_PMT1LV = new G4LogicalVolume(m_PMT1Solid, m_PMTMat, "PMT1LV");
 	m_PMT1LV -> SetVisAttributes(new G4VisAttributes(G4Colour::Gray()));
-	m_PMT1PV = new G4PVPlacement(0, G4ThreeVector(0., 0., - m_SciZ/2. - m_PMTT/2.), m_PMT1LV, "PMT1PV", m_SciLV, false, 0);
+	m_PMT1PV = new G4PVPlacement(0, G4ThreeVector(0., 0., - m_SciZ/2. - m_PMTZ/2.), m_PMT1LV, "PMT1PV", m_SciLV, false, 0);
 
 
 	//------------------------------------------------
@@ -116,11 +117,14 @@ void DetCon::ConstructMaterials()
 	const G4double labTemp = 300.0 * kelvin;
 
 	// Elements to be used to construct materials
-	m_ElH  = new G4Element("Hydrogen",  "H",  1,   1.00794 * g/mole);
-	m_ElC  = new G4Element(  "Carbon",  "C",  6,  12.0107  * g/mole);
-	m_ElN  = new G4Element("Nitrogen",  "N",  7,  14.00674 * g/mole);
-	m_ElO  = new G4Element(  "Oxygen",  "O",  8,  15.9994  * g/mole);
-	m_ElAr = new G4Element(   "Argon", "Ar", 18,  39.948   * g/mole);
+	m_ElH  = new G4Element("Hydrogen", "H" ,  1,   1.00794 * g/mole);
+	m_ElC  = new G4Element("Carbon"  , "C" ,  6,  12.0107  * g/mole);
+	m_ElN  = new G4Element("Nitrogen", "N" ,  7,  14.00674 * g/mole);
+	m_ElO  = new G4Element("Oxygen"  , "O" ,  8,  15.9994  * g/mole);
+	m_ElSi = new G4Element("Silicon" , "Si", 14,  28.085   * g/mole);
+	m_ElAr = new G4Element("Argon"   , "Ar", 18,  39.948   * g/mole);
+	m_ElY  = new G4Element("Yttrium" , "Y" , 39,  88.90584 * g/mole);
+	m_ElLu = new G4Element("Lutetium", "Lu", 71, 174.97    * g/mole);
 
 	// Vacuum material
 	m_VacMat = new G4Material("Vacuum", 0.1225e-5*g/cm3, 3, kStateGas, labTemp);
@@ -136,9 +140,15 @@ void DetCon::ConstructMaterials()
 
 	// Scintillator material
 	// (Basen od EJ-200 datasheet: https://eljentechnology.com/products/plastic-scintillators/ej-200-ej-204-ej-208-ej-212)
-	m_SciMat = new G4Material("scint", 1.023*g/cm3, 2, kStateSolid, labTemp);
-	m_SciMat -> AddElement(m_ElH, 5.17 / 9.86);
-	m_SciMat -> AddElement(m_ElC, 4.69 / 9.86);
+//	m_SciMat = new G4Material("scint", 1.023*g/cm3, 2, kStateSolid, labTemp);
+//	m_SciMat -> AddElement(m_ElH, 5.17 / 9.86);
+//	m_SciMat -> AddElement(m_ElC, 4.69 / 9.86);
+	// Based on https://luxiumsolutions.com/radiation-detection-scintillators/crystal-scintillators/lyso-scintillation-crystals
+	m_SciMat = new G4Material("scint", 7.1*g/cm3, 4, kStateSolid, labTemp);
+	m_SciMat -> AddElement(m_ElLu, 1.8 / 8.0);
+	m_SciMat -> AddElement(m_ElY , 0.2 / 8.0);
+	m_SciMat -> AddElement(m_ElSi, 1.0 / 8.0);
+	m_SciMat -> AddElement(m_ElO , 5.0 / 8.0);
 
 	// PMT material
 	m_PMTMat = new G4Material("PMT", 1.023*g/cm3, 2, kStateSolid, labTemp);
@@ -159,28 +169,50 @@ void DetCon::ConstructMaterials()
 	                                      2.952 * eV, 2.959 * eV, 2.966 * eV, 2.973 * eV, 2.981 * eV, 2.988 * eV, 2.995 * eV, 3.002 * eV, 3.010 * eV, 3.017 * eV,
 	                                      3.024 * eV, 3.032 * eV, 3.039 * eV, 3.047 * eV, 3.054 * eV, 3.062 * eV, 3.069 * eV, 3.077 * eV, 3.084 * eV, 3.092 * eV,
 	                                      3.100 * eV, 3.108 * eV, 3.115 * eV, 3.123 * eV, 3.131 * eV, 3.139 * eV};
-	std::vector<G4double> rindex = {1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 
-	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
-	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
-	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
-	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
-	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
-	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
-	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
-	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
-	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
-	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58};
-	std::vector<G4double> absorption = {3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
-	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
-	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
-	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
-	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
-	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
-	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
-	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
-	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
-	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
-	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m};
+//	std::vector<G4double> rindex = {1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 
+//	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
+//	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
+//	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
+//	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
+//	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
+//	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
+//	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
+//	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
+//	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58, 1.58,
+//	                                1.58, 1.58, 1.58, 1.58, 1.58, 1.58};
+	std::vector<G4double> rindex = {1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 
+	                                1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81,
+	                                1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81,
+	                                1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81,
+	                                1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81,
+	                                1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81,
+	                                1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81,
+	                                1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81,
+	                                1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81,
+	                                1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81, 1.81,
+	                                1.81, 1.81, 1.81, 1.81, 1.81, 1.81};
+//	std::vector<G4double> absorption = {3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
+//	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
+//	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
+//	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
+//	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
+//	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
+//	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
+//	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
+//	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
+//	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m,
+//	                                    3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m, 3.8 * m};
+	std::vector<G4double> absorption = {40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm,
+	                                    40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm,
+	                                    40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm,
+	                                    40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm,
+	                                    40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm,
+	                                    40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm,
+	                                    40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm,
+	                                    40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm,
+	                                    40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm,
+	                                    40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm,
+	                                    40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm, 40.0*cm};
 	std::vector<G4double> scintil = {0.000, 0.062, 0.066, 0.071, 0.075, 0.079, 0.084, 0.088, 0.092, 0.097,
 	                                 0.104, 0.111, 0.118, 0.125, 0.131, 0.137, 0.146, 0.155, 0.164, 0.170,
 	                                 0.176, 0.182, 0.195, 0.209, 0.221, 0.233, 0.244, 0.258, 0.271, 0.285,
@@ -213,11 +245,14 @@ void DetCon::ConstructMaterials()
 	// Spline interpolation isn't used for scintillation.
 	// Arguments spline and createNewKey both take default value false.
 	m_SciMPT -> AddProperty("SCINTILLATIONCOMPONENT1", photonEnergy, scintil, false, true);
-	m_SciMPT -> AddConstProperty("SCINTILLATIONYIELD", 10000. / MeV);
+//	m_SciMPT -> AddConstProperty("SCINTILLATIONYIELD", 10000. / MeV); // For EJ-200
+	m_SciMPT -> AddConstProperty("SCINTILLATIONYIELD", 33200. / MeV); // For LYSO
 //	m_SciMPT -> AddConstProperty("SCINTILLATIONYIELD", 1. / GeV);
 	m_SciMPT -> AddConstProperty("RESOLUTIONSCALE", .0);
-	m_SciMPT -> AddConstProperty("SCINTILLATIONTIMECONSTANT1", 2.1 * ns);
-	m_SciMPT -> AddConstProperty("SCINTILLATIONRISETIME1"    , 0.9 * ns);
+//	m_SciMPT -> AddConstProperty("SCINTILLATIONTIMECONSTANT1",  2.1  * ns); // For EJ-200
+//	m_SciMPT -> AddConstProperty("SCINTILLATIONRISETIME1"    ,  0.9  * ns); // For EJ-200
+	m_SciMPT -> AddConstProperty("SCINTILLATIONTIMECONSTANT1", 36.0  * ns); // For LYSO
+	m_SciMPT -> AddConstProperty("SCINTILLATIONRISETIME1"    ,  0.09 * ns); // For LYSO
 	m_SciMat -> SetMaterialPropertiesTable(m_SciMPT);
 
 
